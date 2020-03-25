@@ -5,39 +5,27 @@ server_address = (socket.gethostbyname(socket.gethostname()), 10000)
 server_IP = socket.gethostbyname(socket.gethostname())
 sock.bind(server_address)
 
-handshake_done = False
 
-while True:
-    data, address = sock.recvfrom(1024)
-    incoming_IP = data.decode("utf-8").split(".")
-    accepted_IP = ""
-    #itererer igennem de dele der burde være en IP, hvis ikke det er tal vil try/except blokken fange det, og hvis ikke det er tal imellem 0 og 999 vil if/else blokken fange det
-    for i in incoming_IP:
-        try:
-            if 0 <= int(i) <= 999:
-                accepted_IP += i + "."
-            else:
-                print("not a valid IP")
-                send_decline_message = sock.sendto("declined".encode("utf-8"), address)
-                break
-        except:
-            print("not a valid IP!")
+def serverSideHandshake():
+    encoded_connection_request_from_client, client_address = sock.recvfrom(1024)
+    connection_request_from_client = encoded_connection_request_from_client.decode("utf-8")
+    client_IP = connection_request_from_client[connection_request_from_client.find('0') + 2:]
 
-    print("C: com-0 <" + accepted_IP[0:-1] + ">")
-    while True:
-        send_acceptance = sock.sendto(server_IP.encode("utf-8"), address)
+    try:
+        if "com-0" in connection_request_from_client and socket.inet_aton(client_IP):
+            send_server_acceptance = sock.sendto(("com-0 accept " + server_IP).encode("utf-8"), client_address)
+            acceptance_from_client, client_address = sock.recvfrom(1024)
+            if "com-0 accept" in acceptance_from_client.decode("utf-8"):
+                firstMessageFromClient()
+    except:
+        print("connection invalid!")
+        sock.close()
 
-while True:
-    receive_client_accept, address = sock.recvfrom(1024)
-    print("C: com-0 " + receive_client_accept)
 
-    """recv_accept, address2 = sock.recvfrom(4096)
-    print('com-0 {}'.format(recv_accept.decode("utf-8")))
-    handshake_done = True
+def firstMessageFromClient():
+    encoded_message_from_client, client_address = sock.recvfrom(4096)
+    message_from_client = encoded_message_from_client.decode("utf-8")
+    print(message_from_client)
 
-    while handshake_done:
-        recv_msg, address = sock.recvfrom(4096)
-        counter = int('{}'.format(recv_msg.decode("utf-8"))[4])
-        print('{}'.format(recv_msg.decode("utf-8")))
-        res = sock.sendto(bytes("res-" + str((counter + 1)) + "=" + " I am server", "utf-8"), address)
-        """
+
+serverSideHandshake()

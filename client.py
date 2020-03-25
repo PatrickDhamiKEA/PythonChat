@@ -5,38 +5,23 @@ server_address = (socket.gethostbyname(socket.gethostname()), 10000)
 your_ip = socket.gethostbyname(socket.gethostname())
 
 handshake_done = False
-counter = 0
 
-#sending IP for acceptance by server
-send_request = sock.sendto(your_ip.encode("utf-8"), server_address)
+def clientSideHandshake():
+    send_connection_request = sock.sendto(("com-0 " + your_ip).encode("utf-8"), server_address)
 
-connection_message, server = sock.recvfrom(1024)
-if connection_message.decode("utf-8") == "declined":
-    print("connection declined!")
-    sock.close()
-try:
-    server_acceptance, server = sock.recvfrom(1024)
-    print("S: com-0 accept <" + server_acceptance.decode("utf-8") + ">")
-    handshake_done = True
+    encoded_response_from_server, server = sock.recvfrom(1024)
+    response_from_server = encoded_response_from_server.decode("utf-8")
+    server_IP = response_from_server[response_from_server.find('0')+9:]
 
-except:
-    print("connection closing")
-    sock.close()
+    try:
+        if "com-0 accept" in response_from_server and socket.inet_aton(server_IP):
+            send_client_acceptance = sock.sendto("com-0 accept".encode("utf-8"), server_address)
+    except:
+        print("connection invalid!")
+        sock.close()
 
+clientSideHandshake()
+handshake_done = True
 while handshake_done:
-    send_accept_of_accept = sock.sendto("accept".encode("utf-8"), server_address)
-
-"""data, server = sock.recvfrom(4096)
-    print('com-0 accept <{!r}>'.format(server))
-
-    if data:
-        send_accept = sock.sendto("accept".encode("utf-8"), server_address)
-        handshake_done = True
-
-    while handshake_done:
-        msg = sock.sendto(("msg-" + str(counter) + "=" + input()).encode("utf-8"), server_address)
-        counter += 2
-        res, server = sock.recvfrom(4096)
-        print(res.decode("utf-8"))"""
-
+    send_message = sock.sendto(input("").encode("utf-8"), server_address)
 
