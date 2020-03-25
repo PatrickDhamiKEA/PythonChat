@@ -22,6 +22,7 @@ def serverSideHandshake():
         sock.close()
 
 
+# forsøg der endnu ikke virker!!
 def messageFromClient():
     encoded_message_from_client, client_address = sock.recvfrom(4096)
     message_from_client = encoded_message_from_client.decode("utf-8")

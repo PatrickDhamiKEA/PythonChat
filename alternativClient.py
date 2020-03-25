@@ -21,6 +21,7 @@ def clientSideHandshake():
         sock.close()
 
 
+# forsøg der endnu ikke virker!!
 def messageFromServer():
     first_message_sent = False
     server_response_counter = 0
