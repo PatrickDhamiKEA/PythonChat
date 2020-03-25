@@ -16,16 +16,29 @@ def serverSideHandshake():
             send_server_acceptance = sock.sendto(("com-0 accept " + server_IP).encode("utf-8"), client_address)
             acceptance_from_client, client_address = sock.recvfrom(1024)
             if "com-0 accept" in acceptance_from_client.decode("utf-8"):
-                firstMessageFromClient()
+                messageFromClient()
     except:
         print("connection invalid!")
         sock.close()
 
 
-def firstMessageFromClient():
-    encoded_message_from_client, client_address = sock.recvfrom(4096)
-    message_from_client = encoded_message_from_client.decode("utf-8")
-    print(message_from_client)
+def messageFromClient():
+    msg_counter = 0
+    res_counter = 1
+    while True:
+        encoded_message_from_client, client_address = sock.recvfrom(4096)
+        if msg_counter == 0:
+            message_from_client = "msg-" + str(msg_counter) + "=" + encoded_message_from_client.decode("utf-8")
+            msg_counter += 1
+            print(message_from_client)
+            automated_response = sock.sendto(("res-" + str(res_counter) + "=I am server").encode("utf-8"), client_address)
+
+        else:
+            message_from_client = "msg-" + str(msg_counter + res_counter) + "=" + encoded_message_from_client.decode("utf-8")
+            msg_counter += 1
+            print(message_from_client)
+            automated_response = sock.sendto(("res-" + str(msg_counter + res_counter) + "=I am server").encode("utf-8"), client_address)
+            res_counter += 1
 
 
 serverSideHandshake()
